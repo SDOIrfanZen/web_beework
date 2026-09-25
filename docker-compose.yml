@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  beework-ota:
+    build: .
+    image: ${IMAGE_NAME:-beework-ota}:${IMAGE_TAG:-1.0.0}
+    container_name: ${CONTAINER_NAME:-beework-ota-server}
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-80}:80"
+    volumes:
+      # Mount public/ folder as web root (for easy file drops without rebuild)
+      - ./public:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/manifest.json"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

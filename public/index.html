@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>beeWork — Download</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 30%, #F5F6FC 0%, #E9EBF5 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      color: #18181B;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .card {
+      background: #FFFFFF;
+      border-radius: 32px;
+      box-shadow:
+        0 24px 48px -12px rgba(90, 80, 160, 0.08),
+        0 4px 16px -2px rgba(0, 0, 0, 0.02),
+        0 0 0 1px rgba(0, 0, 0, 0.03);
+      max-width: 480px;
+      width: 100%;
+      padding: 48px 40px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .logo-container {
+      background: #FFF7E8;
+      border-radius: 26px;
+      width: 92px;
+      height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.1);
+    }
+
+    .logo-container img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #14141E;
+      margin-bottom: 8px;
+    }
+
+    .tagline {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #5538EE;
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .description {
+      font-size: 0.95rem;
+      color: #52525B;
+      line-height: 1.6;
+      margin-bottom: 28px;
+      max-width: 360px;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #5538EE;
+      color: #FFFFFF;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 28px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 24px -4px rgba(85, 56, 238, 0.42);
+      width: 100%;
+    }
+
+    .btn-download:hover {
+      background: #4629DC;
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px -4px rgba(85, 56, 238, 0.5);
+    }
+
+    .btn-download:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 12px -2px rgba(85, 56, 238, 0.35);
+    }
+
+    .btn-download svg {
+      flex-shrink: 0;
+    }
+
+    .features-row {
+      margin-top: 32px;
+      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+      align-items: center;
+      width: calc(100% + 56px);
+      margin-left: -28px;
+      margin-right: -28px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: #3F3F46;
+      line-height: 1.3;
+      white-space: nowrap;
+    }
+
+    .feature-item svg {
+      color: #5538EE;
+      flex-shrink: 0;
+    }
+
+    .feature-divider {
+      width: 1px;
+      height: 22px;
+      background: #E4E4E7;
+    }
+
+    @media (max-width: 560px) {
+      .features-row {
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+      }
+      .feature-item { white-space: normal; }
+    }
+
+    .divider-line {
+      border: none;
+      border-top: 1px solid #F0F0F4;
+      width: 100%;
+      margin-bottom: 22px;
+    }
+
+    .instructions {
+      font-size: 0.82rem;
+      color: #71717A;
+      line-height: 1.6;
+      max-width: 380px;
+    }
+
+    .page-footer {
+      font-size: 0.8rem;
+      color: #A1A1AA;
+      margin-top: 24px;
+    }
+
+    /* ---------- Top navbar ---------- */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      background: rgba(11, 18, 32, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .topbar-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.02rem;
+      letter-spacing: -0.02em;
+    }
+    .nav-brand img { width: 30px; height: 30px; border-radius: 9px; object-fit: cover; }
+    .nav-badge {
+      font-size: 0.66rem;
+      font-weight: 600;
+      color: #8FA3BF;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-left: auto;
+      font-size: 0.86rem;
+      font-weight: 500;
+    }
+    .nav-links a {
+      color: #B9C4D4;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 9px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-links a.active {
+      color: #fff;
+      font-weight: 600;
+      background: #2F6FED;
+    }
+    .nav-links a.active:hover { background: #2A62D4; }
+
+    @media (max-width: 560px) {
+      .nav-badge { display: none; }
+      .nav-links { gap: 6px; }
+      .nav-links a { padding: 7px 12px; }
+    }
+
+    body { padding-top: 62px; }
+  </style>
+</head>
+<body>
+
+  <!-- ================= TOP NAVBAR ================= -->
+  <nav class="topbar">
+    <div class="topbar-inner">
+      <a class="nav-brand" href="index.html">
+        <img src="beeWhere.png" alt="beeWork" />
+        beeWork
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="active">Download</a>
+        <a href="manual/index.html">User Manual</a>
+        <a href="deck/index.html">Deck</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="card">
+    <!-- App Logo -->
+    <div class="logo-container">
+      <img src="beeWhere.png" alt="beeWork Logo" />
+    </div>
+
+    <!-- Titles -->
+    <h1>beeWork</h1>
+    <p class="tagline">Your workplace companion</p>
+
+    <!-- Description -->
+    <p class="description">
+      Download and install beeWork to get started<br />on your work device.
+    </p>
+
+    <!-- Download Button (href is set dynamically from manifest.json) -->
+    <a class="btn-download" id="download-btn" download>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Download
+    </a>
+
+    <!-- 2 Features Row -->
+    <div class="features-row">
+      <!-- Platform -->
+      <div class="feature-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7v2H8v2h8v-2h-2v-2h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H3V4h18v12z"/>
+        </svg>
+        <span>Windows desktop app</span>
+      </div>
+
+      <div class="feature-divider"></div>
+
+      <!-- Company -->
+      <div class="feature-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+        </svg>
+        <span>Zen Computer Systems Sdn. Bhd.</span>
+      </div>
+    </div>
+
+    <hr class="divider-line" />
+
+    <!-- Setup Instructions Note -->
+    <p class="instructions">
+      After downloading, open the installer and follow the setup instructions. beeWork will run quietly in your system tray.
+    </p>
+  </div>
+
+  <!-- Page Footer -->
+  <p class="page-footer">&copy; Zen Computer Systems Sdn. Bhd.</p>
+
+  <script>
+    // Build the download link from manifest.json.
+    // The server keeps versioned filenames; the browser is told to save it as a
+    // plain name so the version number never appears in the download UI.
+    (function () {
+      const btn = document.getElementById('download-btn');
+
+      // Name the browser will save the file as, regardless of the server filename.
+      const SAVE_AS = 'beeWork-Setup.exe';
+
+      // Keep a server-relative fallback so the button still works if manifest fails.
+      const fallbackName = 'beework-setup-1.0.6.exe';
+      btn.href = fallbackName;
+      btn.setAttribute('download', SAVE_AS);
+
+      fetch('manifest.json', { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('manifest not found'); return r.json(); })
+        .then(function (m) {
+          if (!m) return;
+
+          // Prefer explicit download_url; otherwise build the filename from latest_version.
+          let url = m.download_url;
+          if (!url && m.latest_version) {
+            url = 'beework-setup-' + m.latest_version + '.exe';
+          }
+          if (url) {
+            btn.href = url;
+            // Saved as SAVE_AS even though the server file is versioned.
+            btn.setAttribute('download', SAVE_AS);
+          }
+        })
+        .catch(function () {
+          // Fallback already set above; leave it as-is.
+        });
+    })();
+  </script>
+
+</body>
+</html>

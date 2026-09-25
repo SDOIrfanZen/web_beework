@@ -1,0 +1,7 @@
+# Windows-only dev server — not needed in Docker
+serve.ps1
+
+# Git / IDE noise
+.git
+.gitignore
+*.md

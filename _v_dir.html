@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>beeWork — Presentation Deck</title>
+  <meta name="description" content="Presentation deck for beeWork — the desktop app that records working hours automatically." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0B1220;
+      --navy-2: #131C30;
+      --brand: #5B5FC7;
+      --brand-lt: #8B8FE8;
+      --blue: #4A9EFF;
+      --muted: #9FB0C7;
+      --line: rgba(255, 255, 255, 0.09);
+      --card: rgba(255, 255, 255, 0.04);
+      --green: #34D399;
+      --orange: #FBBF24;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--navy);
+      color: #fff;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══════════ CHROME ══════════ */
+    .deck-chrome {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 60;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 18px;
+      background: rgba(8, 13, 24, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+    .chrome-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      letter-spacing: -0.02em;
+      flex-shrink: 0;
+    }
+    .chrome-brand img { width: 22px; height: 22px; border-radius: 7px; object-fit: cover; }
+    .chrome-sub {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #8FA3BF;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--line);
+      padding: 2px 7px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .chrome-nav { display: flex; align-items: center; gap: 8px; margin-left: 8px; }
+
+    .deck-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--line);
+      color: #C9D4E4;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .deck-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .deck-btn[aria-pressed="true"] {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .chrome-counter {
+      font-size: 0.84rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #fff;
+      min-width: 50px;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .chrome-counter .sep { color: #5C6B82; margin: 0 3px; font-weight: 500; }
+    .chrome-counter .total { color: #7D8DA6; }
+
+    .chrome-progress {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      min-width: 40px;
+    }
+    .chrome-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand), var(--blue));
+      border-radius: 999px;
+      transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chrome-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+    /* ══════════ STAGE ══════════ */
+    .deck-viewport {
+      position: fixed;
+      inset: 54px 0 0 0;
+    }
+    .deck-stage { position: relative; width: 100%; height: 100%; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 46px 64px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(26px);
+      transition: opacity 0.34s ease, transform 0.34s ease, visibility 0.34s;
+      overflow-y: auto;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(91, 95, 199, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 84% 78%, rgba(74, 158, 255, 0.10) 0%, transparent 48%),
+        linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%);
+    }
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+      background-size: 46px 46px;
+      pointer-events: none;
+    }
+    .slide.is-active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
+    .slide.is-prev { transform: translateX(-26px); }
+
+    .slide-inner { position: relative; width: 100%; max-width: 1080px; margin: 0 auto; }
+
+    /* ══════════ TYPE ══════════ */
+    .s-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #7C8CA6;
+      margin-bottom: 18px;
+    }
+    .s-kicker .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--brand);
+      box-shadow: 0 0 0 4px rgba(91, 95, 199, 0.22);
+    }
+    .s-title {
+      font-size: clamp(1.5rem, 3.1vw, 2.35rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.14;
+      margin-bottom: 12px;
+    }
+    .s-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 760px;
+    }
+    .s-head { margin-bottom: 30px; }
+
+    /* Title slide */
+    .slide--title { align-items: center; text-align: center; }
+    .title-wrap { max-width: 840px; }
+    .hero-title {
+      font-size: clamp(2.6rem, 7vw, 4.4rem);
+      font-weight: 800;
+      letter-spacing: -0.045em;
+      line-height: 1.02;
+      margin-bottom: 18px;
+    }
+    .hero-lead {
+      font-size: clamp(1.02rem, 2.1vw, 1.38rem);
+      font-weight: 600;
+      color: #D7E0EE;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+    .hero-lead .accent { color: var(--blue); }
+    .hero-sub {
+      font-size: 0.96rem;
+      color: var(--muted);
+      line-height: 1.65;
+      max-width: 620px;
+      margin: 0 auto 26px;
+    }
+    .chips {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      justify-content: center;
+    }
+    .chips li {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: #A9B8CE;
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+    .s-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 0.72rem;
+      color: #5C6B82;
+      letter-spacing: 0.03em;
+    }
+
+    /* Presenter notes are read by JS and shown in the notes drawer only. */
+    .slide__notes { display: none; }
+
+    /* ══════════ GRIDS / CARDS ══════════ */
+    .s-grid { display: grid; gap: 16px; }
+    .s-grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .s-grid--2 { grid-template-columns: repeat(2, 1fr); }
+
+    .s-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 20px 22px;
+      transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    }
+    .s-card:hover {
+      border-color: rgba(91, 95, 199, 0.5);
+      background: rgba(91, 95, 199, 0.08);
+      transform: translateY(-2px);
+    }
+    .s-card h3 {
+      font-size: 0.98rem;
+      font-weight: 700;
+      margin-bottom: 7px;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .s-card p { font-size: 0.86rem; color: var(--muted); line-height: 1.55; }
+    .s-card-n {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 7px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .s-card .ico { font-size: 1.15rem; line-height: 1; }
+
+    /* Pain points */
+    .pains { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .pain {
+      display: flex;
+      gap: 15px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 20px 22px;
+    }
+    .pain-n {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--brand-lt);
+      background: rgba(91, 95, 199, 0.16);
+      border-radius: 8px;
+      width: 30px; height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .pain h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+    .pain p { font-size: 0.84rem; color: var(--muted); line-height: 1.55; }
+
+    /* Flow */
+    .flow {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .flow-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 11px 17px;
+    }
+    .flow-step .n {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--brand-lt);
+      background: rgba(91, 95, 199, 0.2);
+      border-radius: 6px;
+      width: 20px; height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .flow-step.done { border-color: rgba(52, 211, 153, 0.45); }
+    .flow-step.done .n { background: rgba(52, 211, 153, 0.2); color: var(--green); }
+    .flow-arrow { color: #46566E; font-size: 0.9rem; }
+
+    /* Bullet lists */
+    .s-bullets { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+    .s-bullets li {
+      position: relative;
+      padding-left: 26px;
+      font-size: 0.9rem;
+      color: #C9D4E4;
+      line-height: 1.55;
+    }
+    .s-bullets li::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 8px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--brand);
+      box-shadow: 0 0 0 3px rgba(91, 95, 199, 0.18);
+    }
+    .s-bullets strong { color: #fff; }
+
+    /* Steps */
+    .s-steps { display: flex; flex-direction: column; gap: 11px; }
+    .s-step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 13px 18px;
+    }
+    .s-step .sn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      font-size: 0.76rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .s-step .st { font-size: 0.88rem; font-weight: 600; }
+    .s-step .sd { font-size: 0.82rem; color: var(--muted); margin-left: auto; text-align: right; }
+    .s-step.done .sn { background: rgba(52, 211, 153, 0.22); color: var(--green); }
+
+    /* Split layout */
+    .slide--split .split {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 44px;
+      align-items: center;
+    }
+    .shot {
+      background: #fff;
+      border-radius: 14px;
+      padding: 10px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .shot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 420px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .shot-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+    /* Callout */
+    .callout {
+      background: rgba(91, 95, 199, 0.14);
+      border-left: 4px solid var(--brand);
+      border-radius: 10px;
+      padding: 13px 17px;
+      font-size: 0.85rem;
+      color: #D7E0EE;
+      line-height: 1.55;
+      margin-top: 18px;
+    }
+    .callout.ok { background: rgba(52, 211, 153, 0.1); border-left-color: var(--green); }
+    .callout.warn { background: rgba(251, 191, 36, 0.1); border-left-color: var(--orange); }
+
+    .footnote {
+      font-size: 0.82rem;
+      color: #7D8DA6;
+      margin-top: 18px;
+      line-height: 1.55;
+    }
+
+    /* Closing */
+    .slide--close { align-items: center; text-align: center; }
+    .close-links { display: flex; gap: 13px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+    .btn-p {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 13px 26px;
+      border-radius: 12px;
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 10px 26px rgba(91, 95, 199, 0.4);
+      transition: background 0.15s, transform 0.15s;
+    }
+    .btn-p:hover { background: #4B4FB8; transform: translateY(-1px); }
+    .btn-g {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 13px 26px;
+      border-radius: 12px;
+      background: transparent;
+      color: #C9D4E4;
+      border: 1px solid var(--line);
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-g:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .close-meta { font-size: 0.78rem; color: #5C6B82; margin-top: 26px; }
+
+    /* ══════════ SPEAKER NOTES ══════════ */
+    .deck-notes {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 55;
+      background: rgba(6, 10, 19, 0.97);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--line);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      max-height: 34vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .deck-notes.open { transform: translateY(0); }
+    .notes-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 24px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7C8CA6;
+      border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+    .notes-body {
+      padding: 16px 24px 22px;
+      font-size: 0.9rem;
+      color: #C9D4E4;
+      line-height: 1.65;
+      overflow-y: auto;
+    }
+
+    /* ══════════ OVERVIEW ══════════ */
+    .deck-overview {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(5, 9, 17, 0.97);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      padding: 26px 30px 30px;
+    }
+    .deck-overview[hidden] { display: none; }
+    .ov-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+    }
+    .ov-head span {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #7C8CA6;
+    }
+    .ov-grid {
+      flex: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+      gap: 18px;
+      align-content: start;
+    }
+    .ov-item {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid var(--line);
+      cursor: pointer;
+      background: var(--navy);
+      transition: border-color 0.18s, transform 0.18s;
+    }
+    .ov-item:hover { border-color: rgba(91, 95, 199, 0.6); transform: translateY(-2px); }
+    .ov-item.current { border-color: var(--brand); }
+    .ov-thumb { position: relative; overflow: hidden; }
+    .ov-num {
+      position: absolute;
+      left: 9px; bottom: 9px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      background: rgba(0,0,0,0.72);
+      border: 1px solid var(--line);
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 6px;
+      z-index: 2;
+    }
+
+    /* ══════════ RESPONSIVE ══════════ */
+    @media (max-width: 1000px) {
+      .slide { padding: 34px 32px; }
+      .slide--split .split { grid-template-columns: 1fr; gap: 24px; }
+      .s-grid--3 { grid-template-columns: 1fr 1fr; }
+      .pains { grid-template-columns: 1fr; }
+      .shot img { max-height: 280px; }
+    }
+    @media (max-width: 700px) {
+      .chrome-brand .chrome-sub { display: none; }
+      .slide { padding: 26px 20px; }
+      .s-grid--3, .s-grid--2, .shot-row { grid-template-columns: 1fr; }
+      .s-step .sd { display: none; }
+    }
+
+    /* ══════════ PRINT ══════════ */
+    @media print {
+      body { overflow: visible; background: #fff; color: #000; }
+      .deck-chrome, .deck-notes, .deck-overview, .slide__notes { display: none !important; }
+      .deck-viewport { position: static; inset: auto; }
+      .deck-stage { height: auto; }
+      .slide {
+        position: static;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        page-break-after: always;
+        min-height: 92vh;
+        background: #fff;
+        color: #000;
+      }
+      .slide::before { display: none; }
+      .s-title, .hero-title, .s-card h3, .pain h3 { color: #000; }
+      .s-sub, .s-card p, .pain p, .s-bullets li, .hero-sub { color: #333; }
+      .s-card, .pain, .flow-step, .s-step { border-color: #ddd; background: #f8f8f8; }
+      .chips li { color: #333; background: #f0f0f0; border-color: #ddd; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════ DECK CHROME ══════════ -->
+  <header class="deck-chrome" role="toolbar" aria-label="Presentation controls">
+    <div class="chrome-brand">
+      <a href="../index.html" title="Back to beeWork" style="display:flex;align-items:center;gap:9px;color:inherit;text-decoration:none;">
+        <img src="../manual/beeWhere.png" alt="" />
+        <span>beeWork</span>
+      </a>
+      <span class="chrome-sub">deck</span>
+    </div>
+
+    <div class="chrome-nav">
+      <button class="deck-btn" id="btn-prev" aria-label="Previous slide" title="Previous (←)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="chrome-counter" aria-live="polite">
+        <span id="counter-cur">1</span><span class="sep">/</span><span class="total" id="counter-total">14</span>
+      </div>
+      <button class="deck-btn" id="btn-next" aria-label="Next slide" title="Next (→)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <div class="chrome-progress" aria-hidden="true"><div class="chrome-progress-fill" id="progress-fill"></div></div>
+
+    <div class="chrome-tools">
+      <button class="deck-btn" id="btn-notes" aria-pressed="false" title="Speaker notes (N)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="1.5" width="12" height="13" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5h7M4.5 8h7M4.5 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </button>
+      <button class="deck-btn" id="btn-overview" aria-pressed="false" title="Overview grid (G)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+      </button>
+      <button class="deck-btn" id="btn-fullscreen" aria-pressed="false" title="Fullscreen (F)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" id="fs-enter"><path d="M3 5V3h2M11 3h2v2M13 11v2h-2M5 13H3v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" id="fs-exit" style="display:none"><path d="M5 3H3v2M3 11v2h2M11 13h2v-2M13 5V3h-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════ SLIDES ══════════ -->
+  <main class="deck-viewport" id="deck-viewport">
+    <div class="deck-stage" id="deck-stage">
+
+      <!-- 01 · Title -->
+      <section class="slide slide--title is-active" id="s1" aria-label="Slide 1">
+        <div class="slide-inner title-wrap">
+          <p class="s-kicker"><span class="dot"></span>Launch · Desktop app</p>
+          <h1 class="hero-title">beeWork</h1>
+          <p class="hero-lead">Your work hours, <span class="accent">recorded as you work</span> — no timesheet.</p>
+          <p class="hero-sub">Clock in, start a session, and get on with your day. beeWork records your working day and syncs it quietly from the system tray.</p>
+          <ul class="chips">
+            <li>Windows desktop app</li>
+            <li>Update check</li>
+            <li>Runs in the tray</li>
+          </ul>
+        </div>
+        <p class="s-hint">Use ← → or space to navigate · G for overview · F for fullscreen · N for notes</p>
+        <div class="slide__notes">Opening frame in one sentence: beeWork records working hours as the day goes on, so staff never fill in a timesheet. It runs quietly in the tray and syncs in the background.</div>
+      </section>
+
+      <!-- 02 · The problem -->
+      <section class="slide" id="s2" aria-label="Slide 2">
+        <div class="slide-inner">
+          <div class="s-head">
+            <p class="s-kicker"><span class="dot"></span>The problem</p>
+            <h2 class="s-title">Manual timesheets are guesswork.</h2>
+          </div>
+          <div class="pains">
+            <div class="pain">
+              <div class="pain-n">01</div>
+              <div>
+                <h3>Nobody remembers the day</h3>
+                <p>Hours are entered at 6pm from memory — often rounded, rarely accurate.</p>
+              </div>
+            </div>
+            <div class="pain">
+              <div class="pain-n">02</div>
+              <div>
+                <h3>No view of where time went</h3>
+                <p>Which client, which project, how long on each — it's all a blank once the day ends.</p>
+              </div>
+            </div>
+            <div class="pain">
+              <div class="pain-n">03</div>
+              <div>
+                <h3>Admin work steals billable time</h3>
+                <p>Filling in forms is unpaid overhead that nobody enjoys.</p>
+              </div>
+            </div>
+            <div class="pain">
+              <div class="pain-n">04</div>
+              <div>
+                <h3>No proof of the working day</h3>
+                <p>Without a record, hours can't be checked or backed up.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slide__notes">Set up the pain before the pitch: manual timesheets are inaccurate, admin-heavy and impossible to verify. Land the point that the data already exists on the machine — someone just has to capture it.</div>
+      </section>
+
+      <!-- 03 · The loop -->
+      <section class="slide" id="s3" aria-label="Slide 3">
+        <div class="slide-inner">
+          <div class="s-head">
+            <p class="s-kicker"><span class="dot"></span>The idea</p>
+            <h2 class="s-title">One loop, from clock-in to clock-out.</h2>
+            <p class="s-sub">beeWork turns a working day into a record — with almost no input from the user.</p>
+          </div>
+          <div class="flow">
+            <div class="flow-step"><span class="n">1</span>Clock in</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><span class="n">2</span>Start session</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><span class="n">3</span>Work as usual</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><span class="n">4</span>Auto-sync</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step"><span class="n">5</span>Review summary</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step done"><span class="n">6</span>Clock out</div>
+          </div>
+          <ul class="s-bullets">
+            <li><strong>Almost zero input</strong> — pick a client, a project and a task, then start.</li>
+            <li><strong>Capture happens in the background</strong> — logs sync while the session runs.</li>
+            <li><strong>Ends itself</strong> — clocking out on BeeWhere ends the session automatically.</li>
+          </ul>
+          <p class="footnote">The whole interaction is a few clicks at the start of the day — the rest is automatic.</p>
+        </div>
+        <div class="slide__notes">The core narrative: one simple loop. Emphasise that steps 3 and 4 require nothing from the user — that's the whole value proposition versus a timesheet.</div>
+      </section>
+
+      <!-- 04 · Feature map -->
+      <section class="slide" id="s4" aria-label="Slide 4">
+        <div class="slide-inner">
+          <div class="s-head">
+            <p class="s-kicker"><span class="dot"></span>The product</p>
+            <h2 class="s-title">Everything the app does.</h2>
+          </div>
+          <div class="s-grid s-grid--3">
+            <div class="s-card"><h3><span class="ico">⏱</span>Session recording</h3><p>Start a session and your working hours are recorded as you work, with active and idle time separated.</p></div>
+            <div class="s-card"><h3><span class="ico">🏷</span>Client &amp; project tagging</h3><p>Every session is filed against a client and project, with the task you were working on.</p></div>
+            <div class="s-card"><h3><span class="ico">📋</span>Work log</h3><p>A running record of the applications and windows used, each marked synced or pending.</p></div>
+            <div class="s-card"><h3><span class="ico">📊</span>Usage summary</h3><p>A daily breakdown: total active time, time per application, and top sites visited.</p></div>
+            <div class="s-card"><h3><span class="ico">🔔</span>Tray status</h3><p>Lives in the Windows notification area — left-click to open, no window clutter.</p></div>
+            <div class="s-card"><h3><span class="ico">🔄</span>Update check</h3><p>Checks for new versions automatically and notifies you. You choose when to download and install.</p></div>
+          </div>
+        </div>
+        <div class="slide__notes">Capability map: keep it to six. Recording, tagging, logs, summary, tray, updates. These map directly onto the screens in the user manual.</div>
+      </section>
+
+      <!-- 05 · First launch -->
+      <section class="slide slide--split" id="s5" aria-label="Slide 5">
+        <div class="slide-inner split">
+          <div class="s-split-txt">
+            <p class="s-kicker"><span class="dot"></span>Transparency</p>
+            <h2 class="s-title">Users know what's recorded.</h2>
+            <ul class="s-bullets">
+              <li><strong>On first launch</strong>, a company notice explains exactly what the app records.</li>
+              <li><strong>Workflow activity</strong> — the applications and tools used to get work done.</li>
+              <li><strong>Focus status</strong> — active work periods and breaks through the day.</li>
+              <li><strong>Time allocation</strong> — how time is distributed across tools.</li>
+            </ul>
+            <div class="callout ok">Read the notice, then click <strong>"I Acknowledge and Continue"</strong> — shown once, never again.</div>
+          </div>
+          <div>
+            <div class="shot"><img src="../manual/acknowledge_page.png" alt="Company notice shown on first launch" /></div>
+          </div>
+        </div>
+        <div class="slide__notes">Trust slide. Lead with transparency — the user is told upfront what is recorded and why. This is the slide to use if anyone raises privacy concerns.</div>
+      </section>
+
+      <!-- 06 · Login -->
+      <section class="slide slide--split" id="s6" aria-label="Slide 6">
+        <div class="slide-inner split">
+          <div class="s-split-txt">
+            <p class="s-kicker"><span class="dot"></span>Getting in</p>
+            <h2 class="s-title">Sign in with a company account.</h2>
+            <div class="s-steps">
+              <div class="s-step"><span class="sn">1</span><span class="st">Enter company email and password</span></div>
+              <div class="s-step"><span class="sn">2</span><span class="st">Tick "Remember me" to save credentials</span></div>
+              <div class="s-step"><span class="sn">3</span><span class="st">Click Login</span></div>
+            </div>
+            <p class="footnote">Previously used accounts appear for one-tap autofill. It's the same account issued by the company.</p>
+          </div>
+          <div>
+            <div class="shot"><img src="../manual/login_page.png" alt="beeWork login screen" /></div>
+          </div>
+        </div>
+        <div class="slide__notes">Simple onboarding. Note that accounts are company-issued — no separate signup. "Remember me" saves re-typing for users on shared machines.</div>
+      </section>
+
+      <!-- 07 · Start a session -->
+      <section class="slide slide--split" id="s7" aria-label="Slide 7">
+        <div class="slide-inner split">
+          <div class="s-split-txt">
+            <p class="s-kicker"><span class="dot"></span>The daily flow</p>
+            <h2 class="s-title">Start a session in five steps.</h2>
+            <div class="s-steps">
+              <div class="s-step"><span class="sn">1</span><span class="st">Clock in for the day <em>(required)</em></span></div>
+              <div class="s-step"><span class="sn">2</span><span class="st">Select a client</span></div>
+              <div class="s-step"><span class="sn">3</span><span class="st">Select a project</span></div>
+              <div class="s-step"><span class="sn">4</span><span class="st">Type the task and press Enter</span></div>
+              <div class="s-step done"><span class="sn">5</span><span class="st">Click Start session</span></div>
+            </div>
+            <div class="callout warn">Client and project are both required — and at least one task.</div>
+          </div>
+          <div>
+            <div class="shot"><img src="../manual/homepage_after_login.png" alt="beeWork main setup screen" /></div>
+          </div>
+        </div>
+        <div class="slide__notes">Walk the steps left to right. Stress the clock-in requirement — users who hit "Clock In Required" skipped step one. After starting, the window minimises to the tray.</div>
+      </section>
+
+      <!-- 08 · Tray -->
+      <section class="slide slide--split" id="s8" aria-label="Slide 8">
+        <div class="slide-inner split">
+          <div class="s-split-txt">
+            <p class="s-kicker"><span class="dot"></span>Out of the way</p>
+            <h2 class="s-title">Runs quietly in the tray.</h2>
+            <ul class="s-bullets">
+              <li><strong>Left-click</strong> the tray icon to reopen the app.</li>
+              <li><strong>Right-click</strong> for <strong>Exit</strong>.</li>
+              <li><strong>No window clutter</strong> — the app never blocks the desktop.</li>
+            </ul>
+            <p class="footnote">The icon stays visible for the whole session, so users can tell at a glance that recording is active.</p>
+          </div>
+          <div>
+            <div class="shot"><img src="../manual/tray_icon.png?v=2" alt="beeWork tray icon and menu" /></div>
+          </div>
+        </div>
+        <div class="slide__notes">This is the "it doesn't get in the way" slide. Non-intrusive by design — the tray icon doubles as the recording indicator.</div>
+      </section>
+
+      <!-- 09 · Assistant -->
+      <section class="slide slide--split" id="s9" aria-label="Slide 9">
+        <div class="slide-inner split">
+          <div class="s-split-txt">
+            <p class="s-kicker"><span class="dot"></span>Live status</p>
+            <h2 class="s-title">Work Session Assistant.</h2>
+            <ul class="s-bullets">
+              <li>A <strong>live elapsed clock</strong> for the current session.</li>
+              <li><strong>Active vs. idle</strong> time, broken out.</li>
+              <li>Whether logs are <strong>pending</strong> or <strong>synced</strong>.</li>
+            </ul>
+            <p class="footnote">Open it from the tray at any point during the day to confirm recording is running.</p>
+          </div>
+          <div>
+            <div class="shot"><img src="../manual/live_status_page_after_user_start_session.png" alt="Work Session Assistant" /></div>
+          </div>
+        </div>
+        <div class="slide__notes">The live status view. Useful for the demo — open from the tray and show the clock ticking and the sync state changing from pending to synced.</div>
+      </section>
+
+      <!-- 10 · Logs & summary -->
+      <section class="slide" id="s10" aria-label="Slide 10">
+        <div class="slide-inner">
+          <div class="s-head">
+            <p class="s-kicker"><span class="dot"></span>The record</p>
+            <h2 class="s-title">Work log and the daily summary.</h2>
+          </div>
+          <div class="shot-row">
+            <div>
+              <div class="shot"><img src="../manual/recent_activity_logs.png" alt="Recent Work screen" /></div>
+              <p class="footnote"><strong>Recent Work</strong> — application, window title, time recorded, and synced (green) or pending (grey).</p>
+            </div>
+            <div>
+              <div class="shot"><img src="../manual/usage_summary.png" alt="Usage Summary screen" /></div>
+              <p class="footnote"><strong>Usage Summary</strong> — total active time, active vs. idle, time by application, and top sites.</p>
+            </div>
+          </div>
+        </div>
+        <div class="slide__notes">Two screens side by side: the raw event log on the left, the rolled-up daily view on the right. This is the clear record of the day that replaces the timesheet.</div>
+      </section>
+
+      <!-- 11 · Ending -->
+      <section class="slide" id="s11" aria-label="Slide 11">
+        <div class="slide-inner">
+          <div class="s-head">
+            <p class="s-kicker"><span class="dot"></span>Wrapping up</p>
+            <h2 class="s-title">Ending a session — two ways.</h2>
+          </div>
+          <div class="s-grid s-grid--2">
+            <div class="s-card">
+              <h3><span class="ico">🖥</span>From the app</h3>
+              <p>Open the status window and choose <strong>End Session</strong>. A confirmation dialog appears before anything is finalised.</p>
+            </div>
+            <div class="s-card">
+              <h3><span class="ico">📱</span>On BeeWhere</h3>
+              <p>If the user clocks out on the mobile app, beeWork detects it and ends the session automatically.</p>
+            </div>
+          </div>
+          <div class="callout">When a session ends, the clock-out is recorded and any remaining work log entries are sent to the server.</div>
+        </div>
+        <div class="slide__notes">Two ways out, and one of them requires no action at all — clocking out on mobile closes the loop. The pending counter always returns to zero.</div>
+      </section>
+
+      <!-- 12 · Updates -->
+      <section class="slide slide--split" id="s12" aria-label="Slide 12">
+        <div class="slide-inner split">
+          <div class="s-split-txt">
+            <p class="s-kicker"><span class="dot"></span>Always current</p>
+            <h2 class="s-title">Updates itself.</h2>
+            <ul class="s-bullets">
+              <li>beeWork checks for updates <strong>automatically</strong>.</li>
+              <li>An <strong>"Update available"</strong> dialog appears when a new version ships.</li>
+              <li>Click <strong>"Download &amp; Install"</strong> — done.</li>
+            </ul>
+            <p class="footnote">New versions are published to the OTA server; the app picks them up without any manual download.</p>
+          </div>
+          <div>
+            <div class="shot"><img src="../manual/update_available.png" alt="Update available dialog" /></div>
+          </div>
+        </div>
+        <div class="slide__notes">Tie this to the OTA server: dropping a new build and bumping the manifest pushes it to every installed client. No reinstall, no IT visit.</div>
+      </section>
+
+      <!-- 13 · Get started -->
+      <section class="slide" id="s13" aria-label="Slide 13">
+        <div class="slide-inner">
+          <div class="s-head">
+            <p class="s-kicker"><span class="dot"></span>Get started</p>
+            <h2 class="s-title">Up and running in a minute.</h2>
+          </div>
+          <div class="s-grid s-grid--3">
+            <div class="s-card">
+              <h3><span class="s-card-n">1</span>Download</h3>
+              <p>Grab the latest installer from the download page.</p>
+            </div>
+            <div class="s-card">
+              <h3><span class="s-card-n">2</span>Install</h3>
+              <p>Run the setup and follow the prompts. beeWork starts in the system tray.</p>
+            </div>
+            <div class="s-card">
+              <h3><span class="s-card-n">3</span>Sign in</h3>
+              <p>Log in with the company account, clock in, and start the first session.</p>
+            </div>
+          </div>
+          <p class="footnote">Requirements: a company BeeWhere account · an internet connection for sync.</p>
+        </div>
+        <div class="slide__notes">Three-step onboarding. The download link reads the manifest, so it always points at the version the server is publishing.</div>
+      </section>
+
+      <!-- 14 · Closing -->
+      <section class="slide slide--title slide--close" id="s14" aria-label="Slide 14">
+        <div class="slide-inner title-wrap">
+          <p class="s-kicker"><span class="dot"></span>beeWork · Zen Computer Systems</p>
+          <h2 class="hero-title">Thank you.</h2>
+          <p class="hero-sub">Questions about deployment, roll-out or the update server? Get in touch with the internal team.</p>
+          <div class="close-links">
+            <a class="btn-p" href="../index.html">Download beeWork</a>
+            <a class="btn-g" href="../manual/index.html">Read the User Manual</a>
+          </div>
+          <p class="close-meta">Zen Computer Systems Sdn. Bhd. · beeWork Desktop</p>
+        </div>
+        <div class="slide__notes">Close with the two destinations: the download page and the user manual. Invite questions about rollout and the OTA server.</div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ══════════ SPEAKER NOTES ══════════ -->
+  <aside class="deck-notes" id="deck-notes" aria-label="Speaker notes">
+    <div class="notes-head">
+      <span>Speaker notes</span>
+      <span id="notes-slide">1 / 14</span>
+    </div>
+    <div class="notes-body" id="notes-body"></div>
+  </aside>
+
+  <!-- ══════════ OVERVIEW ══════════ -->
+  <div class="deck-overview" id="deck-overview" aria-label="Slide overview" hidden>
+    <div class="ov-head">
+      <span>Overview</span>
+      <button class="deck-btn" id="btn-overview-close" aria-label="Close overview (Esc)" title="Close (Esc)">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="ov-grid" id="ov-grid"></div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var stage    = document.getElementById('deck-stage');
+      var slides   = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+      var total    = slides.length;
+      var cur      = 0;
+      var notesOn  = false;
+      var ovOn     = false;
+
+      var elCur       = document.getElementById('counter-cur');
+      var elTotal     = document.getElementById('counter-total');
+      var elFill      = document.getElementById('progress-fill');
+      var notesPanel  = document.getElementById('deck-notes');
+      var notesBody   = document.getElementById('notes-body');
+      var notesSlide  = document.getElementById('notes-slide');
+      var btnNotes    = document.getElementById('btn-notes');
+      var btnOverview = document.getElementById('btn-overview');
+      var btnFs       = document.getElementById('btn-fullscreen');
+      var fsEnter     = document.getElementById('fs-enter');
+      var fsExit      = document.getElementById('fs-exit');
+      var overview    = document.getElementById('deck-overview');
+      var ovGrid      = document.getElementById('ov-grid');
+
+      elTotal.textContent = total;
+
+      /* ---------- navigation ---------- */
+      function show(i, push) {
+        i = Math.max(0, Math.min(total - 1, i));
+        if (i === cur && push !== true) {
+          // still refresh chrome/notes
+        }
+        slides[cur].classList.remove('is-active');
+        slides[cur].classList.remove('is-prev');
+        cur = i;
+        for (var k = 0; k < total; k++) {
+          slides[k].classList.toggle('is-prev', k < cur);
+        }
+        slides[cur].classList.add('is-active');
+        slides[cur].scrollTop = 0;
+        updateChrome();
+        if (push) {
+          try { history.replaceState(null, '', '#' + slides[cur].id); } catch (e) {}
+        }
+      }
+
+      function updateChrome() {
+        elCur.textContent = cur + 1;
+        elFill.style.width = (((cur + 1) / total) * 100) + '%';
+        notesSlide.textContent = (cur + 1) + ' / ' + total;
+        var n = slides[cur].querySelector('.slide__notes');
+        notesBody.textContent = n ? n.textContent.trim() : '—';
+        var items = ovGrid.querySelectorAll('.ov-item');
+        for (var k = 0; k < items.length; k++) {
+          items[k].classList.toggle('current', k === cur);
+        }
+      }
+
+      function next() { show(cur + 1, true); }
+      function prev() { show(cur - 1, true); }
+
+      document.getElementById('btn-next').addEventListener('click', next);
+      document.getElementById('btn-prev').addEventListener('click', prev);
+
+      /* ---------- speaker notes ---------- */
+      function toggleNotes(force) {
+        notesOn = (typeof force === 'boolean') ? force : !notesOn;
+        notesPanel.classList.toggle('open', notesOn);
+        btnNotes.setAttribute('aria-pressed', String(notesOn));
+      }
+      btnNotes.addEventListener('click', function () { toggleNotes(); });
+
+      /* ---------- fullscreen ---------- */
+      function toggleFs() {
+        var d = document;
+        if (!d.fullscreenElement && !d.webkitFullscreenElement) {
+          var el = d.documentElement;
+          (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+        } else {
+          (d.exitFullscreen || d.webkitExitFullscreen || function(){}).call(d);
+        }
+      }
+      btnFs.addEventListener('click', toggleFs);
+
+      function syncFsIcon() {
+        var on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        btnFs.setAttribute('aria-pressed', String(on));
+        fsEnter.style.display = on ? 'none' : '';
+        fsExit.style.display  = on ? '' : 'none';
+      }
+      document.addEventListener('fullscreenchange', syncFsIcon);
+      document.addEventListener('webkitfullscreenchange', syncFsIcon);
+
+      /* ---------- overview ---------- */
+      function buildOverview() {
+        ovGrid.innerHTML = '';
+        var w = stage.clientWidth || window.innerWidth;
+        var h = stage.clientHeight || (window.innerHeight - 54);
+        var scale = 232 / w;
+
+        slides.forEach(function (s, i) {
+          var item = document.createElement('div');
+          item.className = 'ov-item';
+          item.setAttribute('role', 'button');
+          item.setAttribute('tabindex', '0');
+
+          var thumb = document.createElement('div');
+          thumb.className = 'ov-thumb';
+          thumb.style.width = '232px';
+          thumb.style.height = Math.round(h * scale) + 'px';
+
+          var clone = s.cloneNode(true);
+          clone.classList.remove('is-prev');
+          clone.classList.add('is-active');
+          clone.style.position = 'absolute';
+          clone.style.top = '0';
+          clone.style.left = '0';
+          clone.style.width = w + 'px';
+          clone.style.height = h + 'px';
+          clone.style.transform = 'scale(' + scale + ')';
+          clone.style.transformOrigin = 'top left';
+          clone.style.pointerEvents = 'none';
+          clone.style.opacity = '1';
+          clone.style.visibility = 'visible';
+
+          var num = document.createElement('span');
+          num.className = 'ov-num';
+          num.textContent = i + 1;
+
+          thumb.appendChild(clone);
+          item.appendChild(thumb);
+          item.appendChild(num);
+
+          function go() { closeOverview(); show(i, true); }
+          item.addEventListener('click', go);
+          item.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+          });
+
+          ovGrid.appendChild(item);
+        });
+      }
+
+      function openOverview() {
+        buildOverview();
+        overview.hidden = false;
+        ovOn = true;
+        btnOverview.setAttribute('aria-pressed', 'true');
+        updateChrome();
+      }
+      function closeOverview() {
+        overview.hidden = true;
+        ovOn = false;
+        btnOverview.setAttribute('aria-pressed', 'false');
+      }
+      function toggleOverview() { ovOn ? closeOverview() : openOverview(); }
+
+      btnOverview.addEventListener('click', toggleOverview);
+      document.getElementById('btn-overview-close').addEventListener('click', closeOverview);
+
+      /* ---------- keyboard ---------- */
+      document.addEventListener('keydown', function (e) {
+        var tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+        switch (e.key) {
+          case 'ArrowRight':
+          case 'PageDown':
+          case ' ':
+            e.preventDefault(); next(); break;
+          case 'ArrowLeft':
+          case 'PageUp':
+            e.preventDefault(); prev(); break;
+          case 'Home':
+            e.preventDefault(); show(0, true); break;
+          case 'End':
+            e.preventDefault(); show(total - 1, true); break;
+          case 'n': case 'N':
+            toggleNotes(); break;
+          case 'g': case 'G':
+            toggleOverview(); break;
+          case 'f': case 'F':
+            toggleFs(); break;
+          case 'Escape':
+            if (ovOn) closeOverview();
+            else if (notesOn) toggleNotes(false);
+            else if (document.fullscreenElement) toggleFs();
+            break;
+        }
+      });
+
+      /* ---------- touch swipe ---------- */
+      var tX = 0, tY = 0;
+      stage.addEventListener('touchstart', function (e) {
+        tX = e.changedTouches[0].clientX;
+        tY = e.changedTouches[0].clientY;
+      }, { passive: true });
+      stage.addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - tX;
+        var dy = e.changedTouches[0].clientY - tY;
+        if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+          dx < 0 ? next() : prev();
+        }
+      }, { passive: true });
+
+      /* ---------- init from hash ---------- */
+      (function init() {
+        var h = (location.hash || '').replace('#', '');
+        var idx = 0;
+        if (h) {
+          for (var i = 0; i < total; i++) {
+            if (slides[i].id === h) { idx = i; break; }
+          }
+        }
+        cur = idx;
+        for (var k = 0; k < total; k++) {
+          slides[k].classList.toggle('is-active', k === cur);
+          slides[k].classList.toggle('is-prev', k < cur);
+        }
+        updateChrome();
+      })();
+
+      window.addEventListener('resize', function () {
+        if (ovOn) buildOverview();
+      });
+
+      /* ---------- follow hash changes (e.g. pasted links) ---------- */
+      window.addEventListener('hashchange', function () {
+        var h = (location.hash || '').replace('#', '');
+        if (!h) return;
+        for (var i = 0; i < total; i++) {
+          if (slides[i].id === h && i !== cur) { show(i, false); break; }
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>

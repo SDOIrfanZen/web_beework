@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>beeWork — User Manual</title>
+  <meta name="description" content="Step-by-step guide to signing in, starting a session, and viewing your recorded work hours in beeWork." />
+  <style>
+    :root {
+      --brand: #5B5FC7;
+      --brand-dark: #1E1B4B;
+      --brand-light: #EEF0FF;
+      --accent: #14142B;
+      --muted: #6B7280;
+      --green: #16A34A;
+      --orange: #F59E0B;
+      --line: #E5E7EB;
+      --navy: #0B1220;
+      --navy-2: #131C30;
+      --code-blue: #4A9EFF;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background: #F7F8FC;
+      color: var(--accent);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ---------- Navbar (matches the site) ---------- */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(11, 18, 32, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .navbar-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.02rem;
+      letter-spacing: -0.02em;
+      flex-shrink: 0;
+    }
+    .nav-brand img {
+      width: 30px; height: 30px;
+      border-radius: 9px;
+      object-fit: cover;
+    }
+    .nav-badge {
+      font-size: 0.66rem;
+      font-weight: 600;
+      color: #8FA3BF;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      padding: 2px 8px;
+      border-radius: 6px;
+      letter-spacing: 0;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-left: auto;
+      font-size: 0.86rem;
+      font-weight: 500;
+    }
+    .nav-links a {
+      color: #B9C4D4;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 9px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-links a.active {
+      color: #fff;
+      font-weight: 600;
+      background: #2F6FED;
+    }
+    .nav-links a.active:hover { background: #2A62D4; }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%);
+      color: #fff;
+      padding: 56px 24px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; max-width: 760px; margin: 0 auto; }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #7C8CA6;
+      margin-bottom: 22px;
+    }
+    .hero-eyebrow .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #2F6FED;
+      box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.18);
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .hero h1 .hl { color: var(--code-blue); }
+    .hero p {
+      font-size: 1.02rem;
+      color: #9FB0C7;
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ---------- Layout ---------- */
+    .layout {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 44px 24px 80px;
+      display: grid;
+      grid-template-columns: 232px 1fr;
+      gap: 52px;
+      align-items: start;
+    }
+
+    /* ---------- Sidebar TOC ---------- */
+    .toc {
+      position: sticky;
+      top: 86px;
+      font-size: 0.84rem;
+    }
+    .toc-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9AA3B2;
+      margin-bottom: 14px;
+    }
+    .toc ol { list-style: none; }
+    .toc a {
+      display: block;
+      padding: 7px 12px;
+      color: #5A6272;
+      text-decoration: none;
+      border-left: 2px solid var(--line);
+      border-radius: 0 7px 7px 0;
+      transition: all 0.15s;
+      font-weight: 500;
+    }
+    .toc a:hover {
+      color: var(--brand);
+      background: var(--brand-light);
+      border-left-color: var(--brand);
+    }
+
+    /* ---------- Sections ---------- */
+    .content { min-width: 0; }
+
+    .section {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 30px 34px;
+      margin-bottom: 22px;
+      scroll-margin-top: 86px;
+      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.03);
+    }
+    .section h2 {
+      color: var(--brand-dark);
+      font-size: 1.32rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      border-bottom: 3px solid var(--brand);
+      padding-bottom: 11px;
+      margin-bottom: 20px;
+    }
+    .section h3 {
+      color: var(--brand);
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 20px 0 8px;
+    }
+    .section p { margin: 10px 0; }
+    .section p.lead { margin-top: 0; }
+
+    .section ul { list-style: none; margin: 14px 0; }
+    .section ul li {
+      margin: 10px 0;
+      position: relative;
+      padding-left: 28px;
+      line-height: 1.5;
+    }
+    .section ul li::before {
+      content: "•";
+      position: absolute;
+      left: 5px;
+      top: -1px;
+      color: var(--brand);
+      font-size: 1.35em;
+      line-height: 1.35;
+    }
+    .section li b, .section p b { color: var(--brand-dark); }
+
+    /* ---------- Callouts ---------- */
+    .callout {
+      background: var(--brand-light);
+      border-left: 5px solid var(--brand);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+      color: var(--brand-dark);
+    }
+    .callout.warn { background: #FFF7E6; border-left-color: var(--orange); }
+    .callout.ok   { background: #F0FDF4; border-left-color: var(--green); }
+
+    /* ---------- Step list ---------- */
+    .step-list { list-style: none; margin: 16px 0; }
+    .step-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin: 12px 0;
+      padding-left: 0 !important;
+    }
+    .step-list li::before { content: none !important; }
+    .step-num {
+      flex: 0 0 auto;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.82rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(91, 95, 199, 0.28);
+    }
+    .step-list li > span:last-child { padding-top: 3px; }
+
+    /* ---------- Info card ---------- */
+    .info-card {
+      background: #fff;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .info-card .i-icon { font-size: 1.4rem; line-height: 1.3; }
+    .info-card .i-title { font-weight: 700; color: var(--brand-dark); font-size: 0.92rem; }
+    .info-card .i-desc  { font-size: 0.86rem; color: var(--muted); line-height: 1.45; }
+
+    /* ---------- Screenshot ---------- */
+    .shot {
+      margin: 22px auto 4px;
+      max-width: 720px;
+      text-align: center;
+    }
+    .shot img {
+      width: auto;
+      max-width: 100%;
+      max-height: 470px;
+      height: auto;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 26px rgba(16, 24, 40, 0.09);
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* ---------- Closing ---------- */
+    .closing {
+      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%);
+      color: #fff;
+      text-align: center;
+      padding: 58px 24px;
+    }
+    .closing img {
+      width: 84px; height: 84px;
+      border-radius: 20px;
+      object-fit: cover;
+      margin-bottom: 20px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    }
+    .closing h2 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      border: none;
+      padding: 0;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .closing p { color: #9FB0C7; font-size: 0.94rem; }
+
+    footer {
+      text-align: center;
+      padding: 26px 24px 34px;
+      font-size: 0.8rem;
+      color: #9AA3B2;
+      background: #F7F8FC;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; gap: 28px; padding-top: 30px; }
+      .toc { position: static; }
+      .toc ol { display: flex; flex-wrap: wrap; gap: 6px; }
+      .toc a { border-left: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; }
+      .section { padding: 24px 20px; }
+      .nav-links { gap: 6px; font-size: 0.8rem; }
+      .nav-links a { padding: 7px 12px; }
+    }
+    @media (max-width: 560px) {
+      .nav-badge { display: none; }
+      .section h2 { font-size: 1.14rem; }
+    }
+
+    /* ---------- Print ---------- */
+    @media print {
+      .navbar, .toc, footer { display: none; }
+      body { background: #fff; }
+      .layout { display: block; padding: 0; max-width: none; }
+      .section { border: none; box-shadow: none; padding: 0 0 22px; page-break-inside: avoid; }
+      .hero, .closing { background: #fff; color: #000; }
+      .hero h1 .hl { color: #000; }
+      .hero p, .closing p { color: #444; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= NAVBAR ================= -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a class="nav-brand" href="../index.html">
+        <img src="beeWhere.png" alt="beeWork" />
+        beeWork
+        <span class="nav-badge">User Manual</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Download</a>
+        <a href="#top" class="active">User Manual</a>
+        <a href="../deck/index.html">Deck</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <header class="hero" id="top">
+    <div class="hero-inner">
+      <div class="hero-eyebrow">
+        <span class="dot"></span>
+        User Manual
+      </div>
+      <h1>Everything you need<br />to use <span class="hl">beeWork</span>.</h1>
+      <p>A step-by-step guide to signing in, starting a session, and viewing your recorded work hours.</p>
+    </div>
+  </header>
+
+  <!-- ================= LAYOUT ================= -->
+  <div class="layout">
+
+    <!-- Sidebar TOC -->
+    <aside class="toc">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#s1">1. Introduction</a></li>
+        <li><a href="#s2">2. First Launch</a></li>
+        <li><a href="#s3">3. Login</a></li>
+        <li><a href="#s4">4. Start a Work Session</a></li>
+        <li><a href="#s5">5. Tray Icon</a></li>
+        <li><a href="#s6">6. Work Session Assistant</a></li>
+        <li><a href="#s7">7. Recent Activity Logs</a></li>
+        <li><a href="#s8">8. Usage Summary — Today</a></li>
+        <li><a href="#s9">9. Ending a Session</a></li>
+        <li><a href="#s10">10. Updates</a></li>
+        <li><a href="#s11">11. Need Help?</a></li>
+      </ol>
+    </aside>
+
+    <!-- Sections -->
+    <main class="content">
+
+      <!-- 1. INTRODUCTION -->
+      <section class="section" id="s1">
+        <h2>1. Introduction</h2>
+        <p class="lead"><b>beeWork</b> is a desktop app for recording your working hours. Sign in with your company account and start a session when you begin work. Your recorded hours are saved and synced automatically.</p>
+        <ul>
+          <li>Sign in with your company account to get started</li>
+          <li>Start a session to record your working hours</li>
+          <li>You can minimise beeWork while a session is running</li>
+        </ul>
+        <div class="callout">
+          <i>Tip:</i> You don't need to keep beeWork open on your screen. Your session will continue while beeWork is running in the system tray.
+        </div>
+      </section>
+
+      <!-- 2. FIRST LAUNCH -->
+      <section class="section" id="s2">
+        <h2>2. First Launch</h2>
+        <p class="lead">The first time you open <b>beeWork</b>, it shows a notice explaining how the app works during an active session. It covers:</p>
+        <ul>
+          <li><b>Workflow activity</b> — the applications and tools you use to get your work done.</li>
+          <li><b>Focus status</b> — your active work periods and breaks throughout the day.</li>
+          <li><b>Time allocation</b> — how your time is distributed across your tools.</li>
+        </ul>
+        <div class="callout ok">
+          Read the notice, then click <b>"I Acknowledge and Continue"</b>. You only need to do this once — you won't see the notice again afterwards.
+        </div>
+        <div class="shot">
+          <img src="acknowledge_page.png" alt="Company Notice shown on first launch" />
+        </div>
+      </section>
+
+      <!-- 3. LOGIN -->
+      <section class="section" id="s3">
+        <h2>3. Login</h2>
+        <ul class="step-list">
+          <li><span class="step-num">1</span><span>Enter your <b>company email</b> and <b>password</b>.</span></li>
+          <li><span class="step-num">2</span><span>Tick <b>"Remember me"</b> to save your credentials.</span></li>
+          <li><span class="step-num">3</span><span>Click <b>Login</b>.</span></li>
+        </ul>
+        <div class="callout">
+          Use the same account your company gave you for work. If you're unsure of your login details, contact your <b>internal team</b>.
+        </div>
+        <p style="font-size:.88rem;color:var(--muted);">Previously used accounts are shown for one-tap autofill.</p>
+        <div class="shot">
+          <img src="login_page.png" alt="Login screen" />
+        </div>
+      </section>
+
+      <!-- 4. START A WORK SESSION -->
+      <section class="section" id="s4">
+        <h2>4. Start a Work Session</h2>
+        <p class="lead">The main screen is where you set up your work session.</p>
+        <ul class="step-list">
+          <li><span class="step-num">1</span><span><b>Clock in first (required).</b> You must already be clocked in for the day before you can start a session.</span></li>
+          <li><span class="step-num">2</span><span><b>Client</b> — select the client you're working for.</span></li>
+          <li><span class="step-num">3</span><span><b>Project</b> — select the project (loads after you pick a client).</span></li>
+          <li><span class="step-num">4</span><span><b>What are you working on?</b> — type a task and press <b>Enter</b>.</span></li>
+          <li><span class="step-num">5</span><span>Click <b>Start session</b>.</span></li>
+        </ul>
+        <div class="callout warn">
+          Client and project are <b>both required</b> — the session can't begin without them, and you need at least one task.
+        </div>
+        <p style="font-size:.88rem;color:var(--muted);">After you start, the window minimises to the system tray and a tray icon shows the status.</p>
+        <div class="shot">
+          <img src="homepage_after_login.png" alt="Main setup screen" />
+        </div>
+      </section>
+
+      <!-- 5. TRAY ICON -->
+      <section class="section" id="s5">
+        <h2>5. Tray Icon</h2>
+        <p class="lead">While beeWork is running, a <b>tray icon</b> is always shown in the Windows notification area, so you can tell at a glance that the app is active.</p>
+        <ul>
+          <li><b>Left-click</b> the icon to reopen the app window.</li>
+          <li><b>Right-click</b> the icon to open its menu.</li>
+        </ul>
+        <div class="info-card">
+          <div class="i-icon">🔘</div>
+          <div>
+            <div class="i-title">Menu items</div>
+            <div class="i-desc"><b>Exit</b> — close beeWork completely.</div>
+          </div>
+        </div>
+        <div class="shot">
+          <img src="tray_icon.png?v=2" alt="Tray icon and context menu" />
+        </div>
+      </section>
+
+      <!-- 6. WORK SESSION ASSISTANT -->
+      <section class="section" id="s6">
+        <h2>6. Work Session Assistant</h2>
+        <p class="lead">Opening the app from the tray shows the <b>Work Session Assistant</b> — an overview of your current desktop activity and sync status:</p>
+        <ul>
+          <li><b>Live elapsed clock</b> for the current session.</li>
+          <li><b>Active vs. idle</b> time.</li>
+          <li>Whether logs are <b>pending</b> or <b>synced</b>.</li>
+        </ul>
+        <div class="shot">
+          <img src="live_status_page_after_user_start_session.png" alt="Work Session Assistant" />
+        </div>
+      </section>
+
+      <!-- 7. RECENT ACTIVITY LOGS -->
+      <section class="section" id="s7">
+        <h2>7. Recent Activity Logs</h2>
+        <p class="lead">The <b>Recent Activity Logs</b> screen lists the activity captured during your session:</p>
+        <ul>
+          <li>The application/process name.</li>
+          <li>The window title.</li>
+          <li>The time it was captured.</li>
+          <li>Whether it's <b>synced</b> (green) or still <b>pending</b> (grey).</li>
+        </ul>
+        <div class="shot">
+          <img src="recent_activity_logs.png" alt="Recent Activity Logs screen" />
+        </div>
+      </section>
+
+      <!-- 8. USAGE SUMMARY -->
+      <section class="section" id="s8">
+        <h2>8. Usage Summary — Today</h2>
+        <p class="lead">The <b>Usage Summary</b> screen shows today's activity breakdown:</p>
+        <ul>
+          <li>Total active time.</li>
+          <li>Active vs. idle breakdown.</li>
+          <li>Time by application — how long in each app.</li>
+          <li>Top sites visited.</li>
+        </ul>
+        <p>Use the refresh button to reload the latest figures.</p>
+        <div class="shot">
+          <img src="usage_summary.png" alt="Usage Summary screen" />
+        </div>
+      </section>
+
+      <!-- 9. ENDING A SESSION -->
+      <section class="section" id="s9">
+        <h2>9. Ending a Session</h2>
+        <p class="lead">You can end a session two ways:</p>
+        <ul class="step-list">
+          <li><span class="step-num">🖥️</span><span><b>From the app:</b> open the status window and choose <b>End Session</b> (a confirmation dialog appears).</span></li>
+          <li><span class="step-num">📱</span><span><b>On BeeWhere:</b> if you clock out on your phone, beeWork detects it automatically and ends the session for you.</span></li>
+        </ul>
+        <div class="callout">
+          When a session ends, your clock-out is recorded and remaining activity logs are synced to the server.
+        </div>
+      </section>
+
+      <!-- 10. UPDATES -->
+      <section class="section" id="s10">
+        <h2>10. Updates</h2>
+        <p class="lead">beeWork checks for updates automatically. When a new version is available, you'll see an <b>"Update available"</b> dialog.</p>
+        <ul>
+          <li>Click <b>"Download &amp; Install"</b> to install the update.</li>
+        </ul>
+        <div class="shot">
+          <img src="update_available.png" alt="Update available dialog" />
+        </div>
+      </section>
+
+      <!-- 11. NEED HELP -->
+      <section class="section" id="s11">
+        <h2>11. Need Help?</h2>
+        <p class="lead">Contact your <b>internal team</b> with any questions about this app, your data, or if you have problems logging in or syncing.</p>
+        <div class="callout">
+          If you see a <b>"Clock In Required"</b> message, clock in from the BeeWhere mobile app first, then return and press <b>Refresh Status</b>. If login fails or you can't sync, check your internet connection and contact your internal team.
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= CLOSING ================= -->
+  <div class="closing">
+    <img src="beeWhere.png" alt="beeWork logo" />
+    <h2>Thank You</h2>
+    <p>For questions, contact your internal team.</p>
+  </div>
+
+  <footer>
+    &copy; Zen Computer Systems Sdn. Bhd. &middot; beeWork User Manual
+  </footer>
+
+</body>
+</html>
