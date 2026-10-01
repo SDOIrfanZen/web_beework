@@ -1,0 +1,11 @@
+# Scratch scripts and probes (root only)
+/_*
+
+# Local environment file
+.env
+
+# Editor / tooling metadata
+.ado-code/
+
+# Installer binaries (serve from the OTA server, not version control)
+public/beework-setup-*.exe
